@@ -38,15 +38,15 @@ namespace ColliderConnector
     public unsafe class ColliderConnector : MelonMod
     {
 
-        private static readonly SphereColliderList SphereColliders = new SphereColliderList();
+        private static readonly List<DynamicBoneCollider> dynamicBoneColliders = new List<DynamicBoneCollider>();
         private static readonly BoxColliderList BoxColliders = new BoxColliderList();
         private static readonly CapsuleColliderList CapsuleColliders = new CapsuleColliderList();
         private static readonly MemoryMappedFile memMap = MemoryMappedFile.CreateNew("ColliderconVR", 10000);
         private static int* IPCArena; 
 
-        private static void GetAllColliders<T>(Il2CppSystem.Collections.Generic.List<T> colliderList)
+        private static void GetAllColliders<T>(List<T> colliderList)
         {
-         
+  
             colliderList.Clear();
             var sceneCount = SceneManager.sceneCount;
             for (var i = 0; i < sceneCount; i++)
@@ -68,16 +68,16 @@ namespace ColliderConnector
         public override void OnUpdate()
         {
             
-            GetAllColliders(SphereColliders);
-            IPCArena[1] = SphereColliders.Count; // store map collider count in first 4 bytes
+            GetAllColliders<DynamicBoneCollider>(dynamicBoneColliders);
+            IPCArena[1] = dynamicBoneColliders.Count; // store map collider count in first 4 bytes
             byte* IPCB = (byte*)IPCArena;
             var mOffsetPos = 0;
-            foreach (SphereCollider sp in SphereColliders)
+            foreach (DynamicBoneCollider sp in dynamicBoneColliders)
             {
                 var xb = BitConverter.GetBytes(sp.transform.position.x);
                 var yb = BitConverter.GetBytes(sp.transform.position.y);
                 var zb = BitConverter.GetBytes(sp.transform.position.z);
-                var rad = BitConverter.GetBytes(sp.radius);
+                var rad = BitConverter.GetBytes(sp.m_Radius);
                 var zb1 = Encoding.ASCII.GetBytes(sp.gameObject.name);
                     ///Console.WriteLine($"{sp.gameObject.transform.position.x},{sp.gameObject.transform.position.y},{sp.gameObject.transform.position.z}   ");
                 for (int i=0; i < xb.Length;i++)
